@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="./assets/styles/reset.css" />
+	<link rel="stylesheet" href="./assets/styles/whiteboard.css" />
+	<script src="./js/easeljs-0.8.2.min.js"></script>
+	<script src="./js/jquery.min.js"></script>
+	<script src="./js/socket.io-1.4.5.js"></script>
+	<title>scribble.io - collaborative whiteboard tool</title>
+</head>
+
+<body>
+	<canvas id="canvas" width="800" height="600"></canvas>
+	<br/>
+	<input type="color" id="color"/>
+	<input type="range" min="1" max="100" id="size"/>
+	<script src="./js/client.js"></script>
+</body>
+
+</html>
