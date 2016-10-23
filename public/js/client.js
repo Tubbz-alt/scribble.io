@@ -23,43 +23,48 @@ const State = {
     prevY: 0, /* Previous Y coordinate of mouse, to determine stroke */
 }
 const Serializer = {
+    hexToRgb: function (hex) {
+        let r = parseInt(hex[1] + hex[2], 16);
+        let g = parseInt(hex[3] + hex[4], 16);
+        let b = parseInt(hex[5] + hex[6], 16);
+        return [r, g, b];
+    },
+    rgbToHex: function (rgb) {
+        let rhex = rgb[0].toString(16);
+        let ghex = rgb[1].toString(16);
+        let bhex = rgb[2].toString(16);
+        if (!rhex[1]) rhex = "0" + rhex;
+        if (!ghex[1]) ghex = "0" + ghex;
+        if (!bhex[1]) bhex = "0" + bhex;
+        let hex = "#" + rhex + ghex + bhex;
+        return hex;
+    },
     serialize: function (drawobj) {
         let buffer = new ArrayBuffer(12);
-        let color = drawobj.brush.color;
-        let r = parseInt(color[1] + color[2], 16);
-        let g = parseInt(color[3] + color[4], 16);
-        let b = parseInt(color[5] + color[6], 16);
+        let color = this.hexToRgb(drawobj.brush.color);
         let ui8View = new Uint8Array(buffer);
         let ui16View = new Uint16Array(buffer);
         ui8View[0] = drawobj.brush.size;
-        ui8View[1] = r;
-        ui8View[2] = g;
-        ui8View[3] = b;
+        ui8View[1] = color[0];
+        ui8View[2] = color[1];
+        ui8View[3] = color[2];
         ui16View[2] = drawobj.stroke.x1;
         ui16View[3] = drawobj.stroke.y1;
         ui16View[4] = drawobj.stroke.x2;
         ui16View[5] = drawobj.stroke.y2;
         return buffer;
     },
-    deserialize: function (buffer) { //refactor everything ok ok
+    deserialize: function (buffer) {
         let ui8View = new Uint8Array(buffer);
         let ui16View = new Uint16Array(buffer);
         let size = ui8View[0];
-        let r = ui8View[1];
-        let rh = r.toString(16);
-        rh = rh[1] ? rh : "0" + rh;
-        let g = ui8View[2];
-        let gh = g.toString(16);
-        gh = gh[1] ? gh : "0" + gh;
-        let b = ui8View[3];
-        let bh = g.toString(16);
-        bh = bh[1] ? bh : "0" + bh;
+        let rgb = [ui8View[1], ui8View[2], ui8View[3]];
+        let hexcolor = this.rgbToHex(rgb);
         let x1 = ui16View[2];
         let y1 = ui16View[3];
         let x2 = ui16View[4];
         let y2 = ui16View[5];
         let stroke = new Stroke(x1, y1, x2, y2);
-        let hexcolor = "#" + rh + bh + gh;
         let brush = new Brush(size, hexcolor);
         return new DrawableObject(stroke, brush);
     }
@@ -70,7 +75,6 @@ const Network = {
         socket.emit('draw', drawbytes);
     },
     receiveDrawData: function (drawbytes) {
-        console.debug("DRAWING REC. DATA");
         let drawobj = Serializer.deserialize(drawbytes);
         console.info(drawobj);
         drawObjectOnCanvas(drawobj);
@@ -202,5 +206,9 @@ function updateStage() {
 let name = "Guest"; /* User display name */
 Network.connectToServer();
 
-INPUT_COLOR.click(() => brush.color = INPUT_COLOR.val());
+INPUT_COLOR.change(() => brush.color = INPUT_COLOR.val());
 INPUT_SIZE.change(() => brush.size = parseInt(INPUT_SIZE.val()));
+
+
+let testbrush = new Brush(15, "#FF00FF");
+let testdo = new DrawableObject(new Stroke(13, 123, 33, 225), testbrush);
